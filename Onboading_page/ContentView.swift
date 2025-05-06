@@ -11,3 +11,6 @@ struct ContentView: View {
         OnboardingView()
     }
 }
+#Preview {
+    ContentView()
+}
