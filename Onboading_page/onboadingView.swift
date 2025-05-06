@@ -1,10 +1,3 @@
-//
-//  onboadingView.swift
-//  Onboading_page
-//
-//  Created by Dinuri Dewendra on 2025-05-05.
-//
-
 import SwiftUI
 
 // MARK: - Onboarding Page Model
@@ -19,6 +12,7 @@ struct OnboardingPage: Identifiable {
 struct OnboardingView: View {
     @State private var currentPage = 0
     @State private var animateImages = false
+    @State private var animateText = false
 
     // Auto-scroll timer
     let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -36,73 +30,84 @@ struct OnboardingView: View {
             TabView(selection: $currentPage) {
                 ForEach(0..<pages.count, id: \.self) { index in
                     VStack(spacing: 20) {
-                        // MARK: - Custom Combined Image (only on first page)
                         if index == 0 {
-                            HStack {
-                                ZStack {
-                                    Image("fries")
-                                    // fires on the right
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 100, height: 100)
-                                            .rotationEffect(.degrees(25))
-                                            .offset(x: 80, y: 20)
-                                            .zIndex(0) // Back layer
+                            // MARK: - Combined Image Layer (only on 1st page)
+                            ZStack {
+                                Image("fries")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 100, height: 100)
+                                    .rotationEffect(.degrees(25))
+                                    .offset(x: 80, y: 20)
+                                    .zIndex(0)
 
-                                        //  Coffee on the left
-                                        Image("coffee")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 150, height: 150)
-                                            .rotationEffect(.degrees(-18))
-                                            .offset(x: -70, y: 10)
-                                            .zIndex(1) // Front layer
+                                Image("coffee")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 150, height: 150)
+                                    .rotationEffect(.degrees(-18))
+                                    .offset(x: -70, y: 10)
+                                    .zIndex(1)
 
-                                        // Burger in the center
-                                        Image("burger")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 120, height: 120)
-                                            .offset(x: 0, y: 30)
-                                            .zIndex(2) // Middle layer
-                                    }
+                                Image("burger")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 120, height: 120)
+                                    .offset(x: 0, y: 30)
+                                    .zIndex(2)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.top, 20)
-
-
-                            // MARK: - Bounce Animation (up-down effect)
                             .offset(y: animateImages ? -10 : 10)
                             .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: animateImages)
                             .onAppear {
                                 animateImages = true
                             }
                         } else {
-                            // MARK: - Use Image Asset for other pages
                             Image(pages[index].imageName)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 220)
                         }
 
-                        // MARK: - Title Text
-                        Text(pages[index].title)
-                            .font(.title)
-                            .fontWeight(.bold)
+                        // MARK: - Title + Subtitle with Entrance Animation
+                        VStack(spacing: 8) {
+                            Text(pages[index].title)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .opacity(animateText ? 1 : 0)
+                                .offset(y: animateText ? 0 : 20)
+                                .animation(.easeOut(duration: 0.6), value: animateText)
 
-                        // MARK: - Subtitle Text
-                        Text(pages[index].subtitle)
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                            Text(pages[index].subtitle)
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                                .opacity(animateText ? 1 : 0)
+                                .offset(y: animateText ? 0 : 20)
+                                .animation(.easeOut(duration: 0.6).delay(0.2), value: animateText)
+                        }
                     }
                     .tag(index)
                 }
             }
             .tabViewStyle(PageTabViewStyle())
+            .onAppear {
+                animateText = true
+            }
+            .onChange(of: currentPage) { _ in
+                animateText = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    animateText = true
+                }
+            }
             .onReceive(timer) { _ in
                 withAnimation {
                     currentPage = (currentPage + 1) % pages.count
+                    animateText = false
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    animateText = true
                 }
             }
 
@@ -118,14 +123,18 @@ struct OnboardingView: View {
             }
             .padding(.top, 10)
 
-            // MARK: - Text Button Below Dots
-            
             // MARK: - Navigation Button
             Button(action: {
                 if currentPage < pages.count - 1 {
                     currentPage += 1
                 } else {
                     print("Navigate to home or login screen")
+                }
+
+                // Reset animation on button tap
+                animateText = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    animateText = true
                 }
             }) {
                 Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
@@ -137,7 +146,6 @@ struct OnboardingView: View {
                     .padding(.horizontal, 40)
                     .padding(.top, 12)
             }
-
 
             Spacer()
         }
