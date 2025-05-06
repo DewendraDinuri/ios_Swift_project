@@ -13,6 +13,7 @@ struct OnboardingView: View {
     @State private var currentPage = 0
     @State private var animateImages = false
     @State private var animateText = false
+    @State private var animatePageImage = false
 
     // Auto-scroll timer
     let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -39,7 +40,9 @@ struct OnboardingView: View {
                                     .frame(width: 100, height: 100)
                                     .rotationEffect(.degrees(25))
                                     .offset(x: 80, y: 20)
-                                    .zIndex(0)
+                                    .opacity(animatePageImage ? 1 : 0)
+                                    .scaleEffect(animatePageImage ? 1 : 0.9)
+                                    .animation(.easeOut(duration: 0.5).delay(0.1), value: animatePageImage)
 
                                 Image("coffee")
                                     .resizable()
@@ -47,22 +50,21 @@ struct OnboardingView: View {
                                     .frame(width: 150, height: 150)
                                     .rotationEffect(.degrees(-18))
                                     .offset(x: -70, y: 10)
-                                    .zIndex(1)
+                                    .opacity(animatePageImage ? 1 : 0)
+                                    .scaleEffect(animatePageImage ? 1 : 0.9)
+                                    .animation(.easeOut(duration: 0.5).delay(0.2), value: animatePageImage)
 
                                 Image("burger")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 120, height: 120)
                                     .offset(x: 0, y: 30)
-                                    .zIndex(2)
+                                    .opacity(animatePageImage ? 1 : 0)
+                                    .scaleEffect(animatePageImage ? 1 : 0.9)
+                                    .animation(.easeOut(duration: 0.5).delay(0.3), value: animatePageImage)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.top, 20)
-                            .offset(y: animateImages ? -10 : 10)
-                            .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: animateImages)
-                            .onAppear {
-                                animateImages = true
-                            }
                         } else {
                             // MARK: - Other pages with burger in background
                             ZStack {
@@ -73,7 +75,7 @@ struct OnboardingView: View {
                                     .offset(y: 30)
                                     .opacity(0.2)
                                     .zIndex(0)
-                                    .offset(y: animateImages ? -5 : 5)
+                                    .scaleEffect(animateImages ? 1 : 0.95)
                                     .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: animateImages)
 
                                 Image(pages[index].imageName)
@@ -81,6 +83,9 @@ struct OnboardingView: View {
                                     .scaledToFit()
                                     .frame(height: 180)
                                     .zIndex(1)
+                                    .opacity(animatePageImage ? 1 : 0)
+                                    .scaleEffect(animatePageImage ? 1 : 0.9)
+                                    .animation(.easeOut(duration: 0.5).delay(0.2), value: animatePageImage)
                             }
                             .padding(.top, 40)
                         }
@@ -110,20 +115,25 @@ struct OnboardingView: View {
             .onAppear {
                 animateText = true
                 animateImages = true
+                animatePageImage = true
             }
             .onChange(of: currentPage) { _ in
                 animateText = false
+                animatePageImage = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     animateText = true
+                    animatePageImage = true
                 }
             }
             .onReceive(timer) { _ in
                 withAnimation {
                     currentPage = (currentPage + 1) % pages.count
                     animateText = false
+                    animatePageImage = false
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     animateText = true
+                    animatePageImage = true
                 }
             }
 
@@ -148,8 +158,10 @@ struct OnboardingView: View {
                 }
 
                 animateText = false
+                animatePageImage = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     animateText = true
+                    animatePageImage = true
                 }
             }) {
                 Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
