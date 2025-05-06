@@ -11,12 +11,13 @@ struct OnboardingPage: Identifiable {
 // MARK: - Onboarding View
 struct OnboardingView: View {
     @State private var currentPage = 0
+    @State private var animateImages = false
     @State private var animateText = false
-    @State private var animateImage = false
-    @State private var animateStack = false
 
+    // Auto-scroll timer
     let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
+    // Page data
     let pages = [
         OnboardingPage(imageName: "groupedImages", title: "Browse Menus", subtitle: "Discover a world of flavors from top-rated restaurants, all at your fingertips."),
         OnboardingPage(imageName: "deliver", title: "Lightning Fast Delivery", subtitle: "From kitchen to your doorstep in minutes, always fresh and delicious!"),
@@ -25,11 +26,11 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack {
-            // MARK: - Carousel
+            // MARK: - Page Carousel
             TabView(selection: $currentPage) {
                 ForEach(0..<pages.count, id: \.self) { index in
                     VStack(spacing: 20) {
-                        // MARK: - First Page (stacked images)
+                        // MARK: - First page with layered food images
                         if index == 0 {
                             ZStack {
                                 Image("fries")
@@ -43,7 +44,7 @@ struct OnboardingView: View {
                                 Image("coffee")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .frame(width: 100, height: 100)
+                                    .frame(width: 150, height: 150)
                                     .rotationEffect(.degrees(-18))
                                     .offset(x: -70, y: 10)
                                     .zIndex(1)
@@ -56,41 +57,51 @@ struct OnboardingView: View {
                                     .zIndex(2)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.top, 60) // Fixed spacing
-                            .opacity(animateStack ? 1 : 0)
-                            .offset(y: animateStack ? 0 : 30)
-                            .animation(.easeOut(duration: 0.8), value: animateStack)
+                            .padding(.top, 20)
+                            .offset(y: animateImages ? -10 : 10)
+                            .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: animateImages)
                             .onAppear {
-                                animateStack = true
+                                animateImages = true
                             }
                         } else {
-                            // MARK: - Other Pages (single image with animation)
-                            Image(pages[index].imageName)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 200)
-                                .padding(.top, 60)
-                                .opacity(animateImage ? 1 : 0)
-                                .offset(y: animateImage ? 0 : 30)
-                                .animation(.easeOut(duration: 0.8), value: animateImage)
+                            // MARK: - Other pages with burger in background
+                            ZStack {
+                                Image("burger")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 130, height: 130)
+                                    .offset(y: 30)
+                                    .opacity(0.2)
+                                    .zIndex(0)
+                                    .offset(y: animateImages ? -5 : 5)
+                                    .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: animateImages)
+
+                                Image(pages[index].imageName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 180)
+                                    .zIndex(1)
+                            }
+                            .padding(.top, 40)
                         }
 
-                        // MARK: - Title
-                        Text(pages[index].title)
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .opacity(animateText ? 1 : 0)
-                            .offset(y: animateText ? 0 : 20)
-                            .animation(.easeOut(duration: 0.6), value: animateText)
+                        // MARK: - Texts with animation
+                        VStack(spacing: 8) {
+                            Text(pages[index].title)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .opacity(animateText ? 1 : 0)
+                                .offset(y: animateText ? 0 : 20)
+                                .animation(.easeOut(duration: 0.6), value: animateText)
 
-                        // MARK: - Subtitle
-                        Text(pages[index].subtitle)
-                            .font(.body)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                            .opacity(animateText ? 1 : 0)
-                            .offset(y: animateText ? 0 : 20)
-                            .animation(.easeOut(duration: 0.6).delay(0.2), value: animateText)
+                            Text(pages[index].subtitle)
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                                .opacity(animateText ? 1 : 0)
+                                .offset(y: animateText ? 0 : 20)
+                                .animation(.easeOut(duration: 0.6).delay(0.2), value: animateText)
+                        }
                     }
                     .tag(index)
                 }
@@ -98,22 +109,21 @@ struct OnboardingView: View {
             .tabViewStyle(PageTabViewStyle())
             .onAppear {
                 animateText = true
-                animateImage = true
-                animateStack = true
+                animateImages = true
             }
             .onChange(of: currentPage) { _ in
                 animateText = false
-                animateImage = false
-                animateStack = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     animateText = true
-                    animateImage = true
-                    animateStack = true
                 }
             }
             .onReceive(timer) { _ in
                 withAnimation {
                     currentPage = (currentPage + 1) % pages.count
+                    animateText = false
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    animateText = true
                 }
             }
 
@@ -129,20 +139,17 @@ struct OnboardingView: View {
             }
             .padding(.top, 10)
 
-            // MARK: - Next Button
+            // MARK: - Navigation Button
             Button(action: {
                 if currentPage < pages.count - 1 {
                     currentPage += 1
                 } else {
                     print("Navigate to home or login screen")
                 }
+
                 animateText = false
-                animateImage = false
-                animateStack = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     animateText = true
-                    animateImage = true
-                    animateStack = true
                 }
             }) {
                 Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
