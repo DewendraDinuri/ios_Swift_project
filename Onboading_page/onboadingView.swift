@@ -37,9 +37,9 @@ struct OnboardingView: View {
                                 Image("fries")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .frame(width: 100, height: 100)
+                                    .frame(width: 140, height: 140)
                                     .rotationEffect(.degrees(25))
-                                    .offset(x: 80, y: 20)
+                                    .offset(x: 100, y: 20)
                                     .opacity(animatePageImage ? 1 : 0)
                                     .scaleEffect(animatePageImage ? 1 : 0.9)
                                     .animation(.easeOut(duration: 0.5).delay(0.1), value: animatePageImage)
@@ -47,9 +47,9 @@ struct OnboardingView: View {
                                 Image("coffee")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .frame(width: 150, height: 150)
+                                    .frame(width: 180, height: 180)
                                     .rotationEffect(.degrees(-18))
-                                    .offset(x: -70, y: 10)
+                                    .offset(x: -100, y: 10)
                                     .opacity(animatePageImage ? 1 : 0)
                                     .scaleEffect(animatePageImage ? 1 : 0.9)
                                     .animation(.easeOut(duration: 0.5).delay(0.2), value: animatePageImage)
@@ -57,7 +57,7 @@ struct OnboardingView: View {
                                 Image("burger")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .frame(width: 120, height: 120)
+                                    .frame(width: 180, height: 180)
                                     .offset(x: 0, y: 30)
                                     .opacity(animatePageImage ? 1 : 0)
                                     .scaleEffect(animatePageImage ? 1 : 0.9)
@@ -65,29 +65,27 @@ struct OnboardingView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.top, 20)
-                        } else {
-                            // MARK: - Other pages with burger in background
+                        } else if index == 1 {
                             ZStack {
-                                Image("burger")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 130, height: 130)
-                                    .offset(y: 30)
-                                    .opacity(0.2)
-                                    .zIndex(0)
-                                    .scaleEffect(animateImages ? 1 : 0.95)
-                                    .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: animateImages)
-
                                 Image(pages[index].imageName)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(height: 180)
+                                    .frame(height: 200)
                                     .zIndex(1)
                                     .opacity(animatePageImage ? 1 : 0)
                                     .scaleEffect(animatePageImage ? 1 : 0.9)
                                     .animation(.easeOut(duration: 0.5).delay(0.2), value: animatePageImage)
                             }
                             .padding(.top, 40)
+                        } else {
+                            // Page 2: tracking.cart image only (no burger)
+                            Image(pages[index].imageName)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 200)
+                                .opacity(animatePageImage ? 1 : 0)
+                                .scaleEffect(animatePageImage ? 1 : 0.9)
+                                .animation(.easeOut(duration: 0.5).delay(0.2), value: animatePageImage)
                         }
 
                         // MARK: - Texts with animation
