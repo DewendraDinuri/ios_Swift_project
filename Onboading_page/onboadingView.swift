@@ -119,6 +119,8 @@ struct OnboardingView: View {
             .padding(.top, 10)
 
             // MARK: - Text Button Below Dots
+            
+            // MARK: - Navigation Button
             Button(action: {
                 if currentPage < pages.count - 1 {
                     currentPage += 1
@@ -127,9 +129,15 @@ struct OnboardingView: View {
                 }
             }) {
                 Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
-                    .foregroundColor(.blue)
-                    .padding(.top, 8)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 12)
             }
+
 
             Spacer()
         }
